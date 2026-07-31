@@ -1,5 +1,5 @@
 fastapi
-rembg
+
 numpy
 static_ffmpeg
 pydub
