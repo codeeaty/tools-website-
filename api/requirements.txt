@@ -1,7 +1,9 @@
 fastapi
-
-numpy
-static_ffmpeg
+uvicorn[standard]
+python-multipart
+pydantic
 pydub
-numba>=0.59.0
-llvmlite>=0.42.0
+static-ffmpeg
+Pillow
+rembg
+markdown
