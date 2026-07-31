@@ -25,7 +25,7 @@ type Tool = {
 const tools: Tool[] = [
   // Image
   { name: "Image Resizer", desc: "Resize images to any custom dimension instantly", icon: "⤢", category: "image", badge: "Popular", href: "/image-resizer" },
-  { name: "Background Remover", desc: "Remove image backgrounds with AI in one click", icon: "✂️", category: "image", badge: "AI", href: "/background-remover" },
+  // { name: "Background Remover", desc: "Remove image backgrounds with AI in one click", icon: "✂️", category: "image", badge: "AI", href: "/background-remover" },
   { name: "Format Converter", desc: "Convert between PNG, JPG, WEBP, AVIF and more", icon: "🔄", category: "image", href: "/image-format-converter" },
   { name: "Image Compressor", desc: "Reduce file size without losing visible quality", icon: "🗜️", category: "image", href: "/image-compressor" },
   { name: "Image Editor", desc: "Crop, rotate, flip and apply filters online", icon: "🎨", category: "image", href: "/image-editor" },

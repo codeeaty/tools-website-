@@ -2,7 +2,6 @@ from fastapi import APIRouter, File, UploadFile, Form, HTTPException
 from fastapi.responses import StreamingResponse
 from PIL import Image
 import io
-from rembg import remove
 
 # Optional: if pillow-avif-plugin is installed, it registers automatically on import
 # try:
@@ -212,80 +211,80 @@ PILLOW_FORMAT_BG = {
 }
 
 
-@router.post("/remove-background")
-async def remove_background(
-    file: UploadFile = File(...),
-    format: str = Form("png"),
-    bg_color: str = Form(None),   # None = transparent, "white", "black", or "#rrggbb"
-):
-    # ── Validate format ──────────────────────────────────────────────────────
-    fmt = format.lower().strip()
-    if fmt not in SUPPORTED_OUTPUT_BG:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Unsupported format '{fmt}'. Allowed: png, webp",
-        )
+# @router.post("/remove-background")
+# async def remove_background(
+#     file: UploadFile = File(...),
+#     format: str = Form("png"),
+#     bg_color: str = Form(None),   # None = transparent, "white", "black", or "#rrggbb"
+# ):
+#     # ── Validate format ──────────────────────────────────────────────────────
+#     fmt = format.lower().strip()
+#     if fmt not in SUPPORTED_OUTPUT_BG:
+#         raise HTTPException(
+#             status_code=400,
+#             detail=f"Unsupported format '{fmt}'. Allowed: png, webp",
+#         )
 
-    # ── Validate file type ───────────────────────────────────────────────────
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=422, detail="File must be an image.")
+#     # ── Validate file type ───────────────────────────────────────────────────
+#     if not file.content_type or not file.content_type.startswith("image/"):
+#         raise HTTPException(status_code=422, detail="File must be an image.")
 
-    # ── Read image ───────────────────────────────────────────────────────────
-    contents = await file.read()
+#     # ── Read image ───────────────────────────────────────────────────────────
+#     contents = await file.read()
 
-    if len(contents) > 15 * 1024 * 1024:   # 15 MB limit
-        raise HTTPException(status_code=413, detail="File too large. Max size is 15MB.")
+#     if len(contents) > 15 * 1024 * 1024:   # 15 MB limit
+#         raise HTTPException(status_code=413, detail="File too large. Max size is 15MB.")
 
-    try:
-        input_image = Image.open(io.BytesIO(contents)).convert("RGBA")
-    except Exception:
-        raise HTTPException(status_code=422, detail="Could not open the uploaded file as an image.")
+#     try:
+#         input_image = Image.open(io.BytesIO(contents)).convert("RGBA")
+#     except Exception:
+#         raise HTTPException(status_code=422, detail="Could not open the uploaded file as an image.")
 
-    # ── Remove background using rembg ────────────────────────────────────────
-    try:
-        output_image = remove(input_image)   # returns RGBA PIL image
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Background removal failed: {str(e)}")
+#     # ── Remove background using rembg ────────────────────────────────────────
+#     try:
+#         output_image = remove(input_image)   # returns RGBA PIL image
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Background removal failed: {str(e)}")
 
-    # ── Apply background color if requested ─────────────────────────────────
-    if bg_color:
-        try:
-            bg = Image.new("RGBA", output_image.size, parse_color(bg_color))
-            bg.paste(output_image, mask=output_image.split()[3])  # use alpha as mask
-            output_image = bg.convert("RGB") if fmt != "webp" else bg
-        except Exception:
-            raise HTTPException(status_code=400, detail=f"Invalid background color: {bg_color}")
+#     # ── Apply background color if requested ─────────────────────────────────
+#     if bg_color:
+#         try:
+#             bg = Image.new("RGBA", output_image.size, parse_color(bg_color))
+#             bg.paste(output_image, mask=output_image.split()[3])  # use alpha as mask
+#             output_image = bg.convert("RGB") if fmt != "webp" else bg
+#         except Exception:
+#             raise HTTPException(status_code=400, detail=f"Invalid background color: {bg_color}")
 
-    # ── Encode output ────────────────────────────────────────────────────────
-    output = io.BytesIO()
+#     # ── Encode output ────────────────────────────────────────────────────────
+#     output = io.BytesIO()
 
-    save_kwargs: dict = {"format": PILLOW_FORMAT_BG[fmt]}
-    if fmt == "webp":
-        save_kwargs["quality"] = 90
-        save_kwargs["method"] = 6
+#     save_kwargs: dict = {"format": PILLOW_FORMAT_BG[fmt]}
+#     if fmt == "webp":
+#         save_kwargs["quality"] = 90
+#         save_kwargs["method"] = 6
 
-    # Keep RGBA for PNG/WEBP transparency
-    if bg_color is None:
-        final_image = output_image  # already RGBA from rembg
-    else:
-        final_image = output_image
+#     # Keep RGBA for PNG/WEBP transparency
+#     if bg_color is None:
+#         final_image = output_image  # already RGBA from rembg
+#     else:
+#         final_image = output_image
 
-    try:
-        final_image.save(output, **save_kwargs)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to encode image: {str(e)}")
+#     try:
+#         final_image.save(output, **save_kwargs)
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Failed to encode image: {str(e)}")
 
-    output.seek(0)
+#     output.seek(0)
 
-    base_name = file.filename or "image"
-    name_without_ext = base_name.rsplit(".", 1)[0]
-    out_filename = f"{name_without_ext}_nobg.{fmt}"
+#     base_name = file.filename or "image"
+#     name_without_ext = base_name.rsplit(".", 1)[0]
+#     out_filename = f"{name_without_ext}_nobg.{fmt}"
 
-    return StreamingResponse(
-        output,
-        media_type=FORMAT_MIME_BG[fmt],
-        headers={"Content-Disposition": f'attachment; filename="{out_filename}"'},
-    )
+#     return StreamingResponse(
+#         output,
+#         media_type=FORMAT_MIME_BG[fmt],
+#         headers={"Content-Disposition": f'attachment; filename="{out_filename}"'},
+#     )
 
 
 def parse_color(color: str) -> tuple:

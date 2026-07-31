@@ -8,7 +8,7 @@ import { Metadata } from "next";
 // Each tool's actual implementation is only fetched/loaded when the user visits that specific page.
 const ImageResizer = dynamic(() => import("@/components/toolsComponents/ImageResizer"));
 const FormatConverter = dynamic(() => import("@/components/toolsComponents/FormatConverter"));
-const Backgoundremover = dynamic(() => import("@/components/toolsComponents/Backgoundremover"));
+// const Backgoundremover = dynamic(() => import("@/components/toolsComponents/Backgoundremover"));
 const ImageCompressor = dynamic(() => import("@/components/toolsComponents/ImageCompressor"));
 const ImageEditor = dynamic(() => import("@/components/toolsComponents/ImageEditor"));
 
@@ -37,7 +37,7 @@ const wrap = (Comp: React.ComponentType) => () => (
 
 const ResizerTool = wrap(ImageResizer);
 const ImageConverter = wrap(FormatConverter);
-const BackgruondImage = wrap(Backgoundremover);
+// const BackgruondImage = wrap(Backgoundremover);
 const Imagecompressor = wrap(ImageCompressor);
 const Imageeditor = wrap(ImageEditor);
 
@@ -61,7 +61,7 @@ const Jsonformatter = wrap(JsonFormatter);
 const toolComponents: Record<string, React.ComponentType> = {
   "image-resizer": ResizerTool,
   "format-converter": ImageConverter,
-  "background-remover": BackgruondImage,
+  // "background-remover": BackgruondImage,
   "image-compressor": Imagecompressor,
   "image-editor": Imageeditor,
   "audio-converter": Audioconverter,
