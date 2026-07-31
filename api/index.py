@@ -38,13 +38,21 @@ app.add_middleware(
 #     print(f"--- FAILED TO LOAD MODEL: {e} ---")
 
 # templates = Jinja2Templates(directory="templates")
+import tempfile
+
+UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "uploads")
+OUTPUT_DIR = os.path.join(tempfile.gettempdir(), "outputs")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+app.mount("/outputs", StaticFiles(directory=OUTPUT_DIR), name="outputs")
+
+
 
 # Guarantee that system resource folders exist
-os.makedirs("uploads", exist_ok=True)
-os.makedirs("outputs", exist_ok=True)
 
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
+
 # Paste this after all app.include_router() calls
 @app.get("/debug-routes")
 def list_routes():
