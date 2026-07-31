@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Easy Photo Editor Studio</title>
+<style>
+:root {
+  --bg-app: #f1f5f9;
+  --card-bg: #ffffff;
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border-color: #cbd5e1;
+  --focus-ring: rgba(79, 70, 229, 0.15);
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.studio-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  max-width: 900px;
+  background: var(--card-bg);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.left-panel {
+  flex: 1;
+  padding: 30px;
+  border-right: 1px solid #e2e8f0;
+}
+
+.right-panel {
+  flex: 1;
+  padding: 30px;
+  background-color: #fafafa;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+h2 {
+  margin-top: 0;
+  margin-bottom: 6px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.field-group {
+  margin-bottom: 18px;
+}
+
+label.group-title {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.upload-box {
+  border: 2px dashed var(--border-color);
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.upload-box:hover, .upload-box.dragover {
+  border-color: var(--primary);
+  background: #eef2ff;
+}
+
+.upload-box p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.upload-box span {
+  font-size: 13px;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 4px;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+select {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-main);
+  outline: none;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+.checkbox-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #f8fafc;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-main);
+}
+
+.checkbox-label input {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.color-settings {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.color-select-box {
+  flex: 1;
+}
+
+.picker-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+input[type="color"] {
+  -webkit-appearance: none;
+  border: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+  background: none;
+  box-shadow: 0 0 0 2px #cbd5e1;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+button {
+  width: 100%;
+  background: var(--primary);
+  color: white;
+  padding: 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin-top: 10px;
+}
+
+button:hover {
+  background: var(--primary-hover);
+}
+
+.preview-placeholder {
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 40px 20px;
+}
+
+.output-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.section h3 {
+  font-size: 14px;
+  color: var(--text-main);
+  margin: 0 0 8px 0;
+}
+
+img {
+  width: 100%;
+  max-height: 260px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  object-fit: contain;
+  background: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .studio-container {
+    flex-direction: column;
+  }
+  .left-panel {
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="studio-container">
+  
+  <div class="left-panel">
+    <h2>Photo Editor</h2>
+    <div class="subtitle">Adjust your setup parameters on the left</div>
+
+    <form action="/upload" method="post" enctype="multipart/form-data">
+
+      <div class="field-group">
+        <label class="group-title">1. Choose your image</label>
+        <div class="upload-box" id="dropzone">
+          <p id="upload-text">Select a photo</p>
+          <span>or drag and drop it here</span>
+        </div>
+        <input type="file" name="file" id="fileInput" class="file-input-hidden" accept="image/*" required>
+      </div>
+
+      <div class="field-group">
+        <label class="group-title">2. Choose what to do</label>
+        <div class="checkbox-row">
+          <label class="checkbox-label">
+            <input type="checkbox" name="remove_bg" value="true" checked>
+            Cut out person (Remove Background)
+          </label>
+
+          <label class="checkbox-label">
+            <input type="checkbox" name="add_color" id="addColorCheck" value="true">
+            Add new background color
+          </label>
+        </div>
+      </div>
+
+      <div class="field-group" id="colorDropdownContainer" style="display: none;">
+        <label class="group-title">3. Pick a background color</label>
+        <div class="color-settings">
+          <div class="color-select-box">
+            <select name="bg_color" id="colorSelect">
+              <option value="#ffffff">White</option>
+              <option value="#4d74ff">Blue</option>
+              <option value="#custom">Custom Color Picker</option>
+            </select>
+          </div>
+          <div class="picker-wrapper" id="nativePickerWrapper" style="display: none;">
+            <input type="color" id="customColorPicker" value="#ff0000">
+          </div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="group-title">4. Size & Crop</label>
+        <select name="crop_category">
+          <option value="none">Keep original size (No Crop)</option>
+          <option value="passport">Crop to Passport Size</option>
+        </select>
+      </div>
+
+      <button type="submit">Process and Run</button>
+    </form>
+  </div>
+
+  <div class="right-panel" id="rightPanel">
+    {% if original or removed %}
+      <div class="output-grid">
+        {% if original %}
+        <div class="section">
+          <h3>Your original photo:</h3>
+          <img src="{{ original }}" alt="Original image" id="originalPreview">
+        </div>
+        {% endif %}
+
+        {% if removed %}
+        <div class="section">
+          <h3>Your processed photo:</h3>
+          <img src="{{ removed }}" alt="Processed image">
+        </div>
+        {% endif %}
+      </div>
+    {% else %}
+      <div class="preview-placeholder" id="placeholderText">
+        <p>Your finished photo results will appear over here on the right after processing.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  const addColorCheck = document.getElementById('addColorCheck');
+  const colorDropdownContainer = document.getElementById('colorDropdownContainer');
+  const colorSelect = document.getElementById('colorSelect');
+  const nativePickerWrapper = document.getElementById('nativePickerWrapper');
+  const customColorPicker = document.getElementById('customColorPicker');
+  
+  const fileInput = document.getElementById('fileInput');
+  const dropzone = document.getElementById('dropzone');
+  const uploadText = document.getElementById('upload-text');
+  const rightPanel = document.getElementById('rightPanel');
+  const placeholderText = document.getElementById('placeholderText');
+
+  // Trigger file manager click
+  dropzone.addEventListener('click', () => fileInput.click());
+
+  // Drag and Drop styles
+  dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('dragover');
+  });
+
+  dropzone.addEventListener('dragleave', () => {
+    dropzone.classList.remove('dragover');
+  });
+
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) {
+      fileInput.files = e.dataTransfer.files;
+      handleFileChange(e.dataTransfer.files[0]);
+    }
+  });
+
+  // Handle standard clicking file change
+  fileInput.addEventListener('change', function() {
+    if (this.files && this.files[0]) {
+      handleFileChange(this.files[0]);
+    }
+  });
+
+  // ADDED: Immediate Instant Local Image Preview logic
+  function handleFileChange(file) {
+    // Update dropzone label text
+    uploadText.innerText = "Selected: " + file.name;
+    uploadText.style.color = "var(--primary)";
+
+    // Render instant image preview on the right panel
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      // Clear out fallback message placeholders if they exist
+      if (placeholderText) placeholderText.style.display = 'none';
+      
+      // Look for or dynamically create an active preview container
+      let outputGrid = rightPanel.querySelector('.output-grid');
+      if (!outputGrid) {
+        outputGrid = document.createElement('div');
+        outputGrid.className = 'output-grid';
+        rightPanel.appendChild(outputGrid);
+      }
+
+      let originalSection = document.getElementById('orig-sec');
+      if (!originalSection) {
+        originalSection = document.createElement('div');
+        originalSection.className = 'section';
+        originalSection.id = 'orig-sec';
+        originalSection.innerHTML = `<h3>Your original photo (Preview):</h3><img src="${e.target.result}" alt="Original preview">`;
+        outputGrid.insertBefore(originalSection, outputGrid.firstChild);
+      } else {
+        originalSection.querySelector('img').src = e.target.result;
+      }
+    }
+    reader.readAsDataURL(file);
+  }
+
+  // Toggle color container display
+  addColorCheck.addEventListener('change', function() {
+    colorDropdownContainer.style.display = this.checked ? 'block' : 'none';
+  });
+
+  // Toggle visibility of browser's native custom color picker wheel
+  colorSelect.addEventListener('change', function() {
+    if (this.value === '#custom') {
+      nativePickerWrapper.style.display = 'block';
+      this.options[this.selectedIndex].value = customColorPicker.value;
+    } else {
+      nativePickerWrapper.style.display = 'none';
+    }
+  });
+
+  // Feed custom picker colors dynamically into form properties
+  customColorPicker.addEventListener('input', function() {
+    if(colorSelect.value !== '#ffffff' && colorSelect.value !== '#4d74ff') {
+        colorSelect.options[colorSelect.selectedIndex].value = this.value;
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Easy HD Photo Upscaler</title>
+
+<style>
+:root {
+  --bg-app: #f1f5f9;
+  --card-bg: #ffffff;
+  --primary: #059669; 
+  --primary-hover: #047857;
+  --accent-download: #2563eb; /* Royal Blue for download */
+  --accent-download-hover: #1d4ed8;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border-color: #cbd5e1;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.studio-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  max-width: 950px;
+  background: var(--card-bg);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.left-panel {
+  flex: 1;
+  padding: 30px;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.right-panel {
+  flex: 1.2;
+  padding: 30px;
+  background-color: #fafafa;
+}
+
+h2 {
+  margin-top: 0;
+  margin-bottom: 6px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.field-group {
+  margin-bottom: 18px;
+}
+
+.upload-box {
+  border: 2px dashed var(--border-color);
+  padding: 40px 24px;
+  border-radius: 12px;
+  text-align: center;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.upload-box:hover {
+  border-color: var(--primary);
+  background: #ecfdf5;
+}
+
+.upload-box p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.upload-box span {
+  font-size: 13px;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 4px;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+.info-banner {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Action Buttons Base */
+.btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.btn-primary:disabled {
+  background-color: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.btn-primary.processing {
+  background-color: #047857 !important;
+  cursor: wait;
+}
+
+/* ⭐ NEW STYLE: DOWNLOAD BUTTON */
+.btn-download {
+  background: var(--accent-download);
+  color: white;
+  margin-top: 15px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.btn-download:hover {
+  background: var(--accent-download-hover);
+}
+
+.spinner {
+  display: none;
+  width: 18px;
+  height: 18px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.preview-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.preview-box {
+  background: #ffffff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.preview-box h3 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin: 0 0 10px 0;
+  width: 100%;
+  text-align: left;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 5px;
+}
+
+.img-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+}
+
+.preview-box img {
+  max-width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.empty-text {
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .studio-container {
+    flex-direction: column;
+  }
+  .left-panel {
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="studio-container">
+  
+  <div class="left-panel">
+    <div>
+      <h2>Photo HD Enlarger</h2>
+      <div class="subtitle">Make your small or blurry photos clear and sharp</div>
+
+      <form id="upscaleForm" action="/upscales" method="post" enctype="multipart/form-data">
+        <div class="field-group">
+          <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+            <p id="upload-text">Select photo to enhance</p>
+            <span>Supports standard image formats</span>
+          </div>
+          <input type="file" name="file" id="fileInput" class="file-input-hidden" accept="image/*" required>
+        </div>
+
+        <div class="field-group">
+          <div class="info-banner">
+            ✨ <b>Processing Engine:</b> Reconstructs fine pixels to establish real clarity.
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <button type="submit" form="upscaleForm" id="submitBtn" class="btn btn-primary" disabled>
+      <div class="spinner" id="btnSpinner"></div>
+      <span id="btnText">Make Photo HD</span>
+    </button>
+  </div>
+
+  <div class="right-panel">
+    <div class="preview-grid">
+      
+      <div class="preview-box">
+        <h3>Before (Original Image)</h3>
+        <div class="img-container" id="beforeContainer">
+          {% if original %}
+            <img src="{{ original }}" alt="Original image">
+          {% else %}
+            <span class="empty-text" id="beforePlaceholder">No file chosen yet</span>
+            <img id="localPreview" style="display: none;" alt="Local upload preview">
+          {% endif %}
+        </div>
+      </div>
+      <div class="preview-box">
+        <h3>After (Enhanced Result)</h3>
+        <div class="img-container">
+          {% if removed %}
+            <img src="{{ removed }}" alt="Enhanced image">
+          {% else %}
+            <span class="empty-text" id="afterPlaceholder">Awaiting image execution...</span>
+          {% endif %}
+        </div>
+        
+        {% if removed %}
+          <a href="{{ removed }}" download="upscaled-hd-image.png" class="btn btn-download">
+            📥 Download HD Image
+          </a>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const fileInput = document.getElementById('fileInput');
+  const uploadText = document.getElementById('upload-text');
+  const submitBtn = document.getElementById('submitBtn');
+  const btnSpinner = document.getElementById('btnSpinner');
+  const btnText = document.getElementById('btnText');
+  const upscaleForm = document.getElementById('upscaleForm');
+  
+  const beforePlaceholder = document.getElementById('beforePlaceholder');
+  const localPreview = document.getElementById('localPreview');
+
+  fileInput.addEventListener('change', function() {
+    if (this.files && this.files[0]) {
+      uploadText.innerText = "Selected: " + this.files[0].name;
+      uploadText.style.color = "var(--primary)";
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        if(beforePlaceholder) beforePlaceholder.style.display = 'none';
+        localPreview.src = e.target.result;
+        localPreview.style.display = 'block';
+      }
+      reader.readAsDataURL(this.files[0]);
+
+      submitBtn.disabled = false;
+    } else {
+      submitBtn.disabled = true;
+    }
+  });
+
+  upscaleForm.addEventListener('submit', function() {
+    submitBtn.disabled = true;
+    submitBtn.classList.add('processing');
+    btnSpinner.style.display = "block";
+    btnText.innerText = "Processing Image... Please Wait";
+  });
+</script>
+
+</body>
+</html>

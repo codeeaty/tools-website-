@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Premium AI Object Eraser</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 30px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            background-color: #1e1e24; 
+            color: #fff;
+        }
+        
+        h1 { margin-bottom: 5px; font-weight: 600; color: #f0f0f3; }
+        p { color: #aaa; margin-bottom: 25px; font-size: 14px; }
+
+        .controls-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        /* Premium File Input Styling */
+        input[type="file"] {
+            background: #2a2a35;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            color: #ccc;
+            cursor: pointer;
+        }
+
+        .canvas-wrapper { 
+            position: relative; 
+            width: 512px; 
+            height: 512px; 
+            border: 2px solid #3e3e4a;
+            background-color: #111;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        #imagePreview, #maskCanvas { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 512px; 
+            height: 512px; 
+            object-fit: fill; 
+        }
+
+        #maskCanvas { cursor: crosshair; z-index: 10; touch-action: none; }
+        
+        .btn-group { display: flex; gap: 15px; }
+
+        button {
+            padding: 12px 28px; 
+            font-size: 15px; 
+            font-weight: bold;
+            cursor: pointer; 
+            border: none; 
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #processBtn { background-color: #007bff; color: white; }
+        #processBtn:hover { background-color: #0056b3; }
+        #processBtn:disabled { background-color: #444; color: #888; cursor: not-allowed; }
+
+        #undoBtn { background-color: #dc3545; color: white; }
+        #undoBtn:hover { background-color: #bd2130; }
+        #undoBtn:disabled { background-color: #444; color: #888; cursor: not-allowed; }
+
+        /* Premium Green Download Button Style */
+        #downloadBtn { background-color: #28a745; color: white; }
+        #downloadBtn:hover { background-color: #218838; }
+        #downloadBtn:disabled { background-color: #444; color: #888; cursor: not-allowed; }
+
+        /* Loading Spinner Overlays */
+        .loading-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .loading-overlay.active { opacity: 1; pointer-events: auto; }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid #333;
+            border-top: 5px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <h1>Premium AI Object Eraser</h1>
+    <p>Upload a photo, highlight an object to erase it, and keep editing seamlessly.</p>
+
+    <div class="controls-container">
+        <input type="file" id="fileInput" accept="image/*">
+        <button onclick="undoLastAction()" id="undoBtn" disabled>↺ Undo Last</button>
+        <button onclick="downloadCurrentImage()" id="downloadBtn" disabled>⬇ Download Result</button>
+    </div>
+
+    <div class="canvas-wrapper">
+        <img id="imagePreview" alt="Upload an image to begin">
+        <canvas id="maskCanvas" width="512" height="512"></canvas>
+        
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="spinner"></div>
+            <div>AI is clearing object...</div>
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button onclick="processImage()" id="processBtn" disabled>Remove Selected Object</button>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const imgPreview = document.getElementById('imagePreview');
+        const canvas = document.getElementById('maskCanvas');
+        const ctx = canvas.getContext('2d');
+        const processBtn = document.getElementById('processBtn');
+        const undoBtn = document.getElementById('undoBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        
+        let painting = false;
+        let currentImageBlob = null; 
+        let editHistory = []; 
+
+        // Handle fresh file upload
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                currentImageBlob = file;
+                editHistory = [file]; 
+                
+                const reader = new FileReader();
+                reader.onload = (e) => imgPreview.src = e.target.result;
+                reader.readAsDataURL(file);
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height); 
+                processBtn.disabled = false;
+                downloadBtn.disabled = false; // Enable downloads once an image is ready
+                undoBtn.disabled = true;
+            }
+        });
+
+        // Drawing Setup
+        canvas.onmousedown = (e) => {
+            if(!currentImageBlob) return;
+            painting = true;
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
+        };
+        
+        canvas.onmouseup = () => painting = false;
+        canvas.onmouseleave = () => painting = false;
+        
+        canvas.onmousemove = (e) => {
+            if (!painting) return;
+            ctx.lineWidth = 24; 
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = 'white'; 
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+        };
+
+        // Execution Core
+        function processImage() {
+            if (!currentImageBlob) return alert("Please select an image first!");
+
+            loadingOverlay.classList.add('active');
+            processBtn.disabled = true;
+
+            canvas.toBlob(maskBlob => {
+                const formData = new FormData();
+                formData.append("image", currentImageBlob, "session_image.png");
+                formData.append("mask", maskBlob, "mask.png");
+                
+                fetch("/removeobjectvalue", { method: "POST", body: formData })
+                .then(response => {
+                    if (!response.ok) throw new Error("Inpainting processing fault");
+                    return response.blob(); 
+                })
+                .then(newImageBlob => {
+                    currentImageBlob = newImageBlob;
+                    editHistory.push(newImageBlob); 
+                    
+                    const updatedStageUrl = URL.createObjectURL(newImageBlob);
+                    imgPreview.src = updatedStageUrl;
+                    
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    loadingOverlay.classList.remove('active');
+                    processBtn.disabled = false;
+                    undoBtn.disabled = false; 
+                })
+                .catch(error => {
+                    alert("Error: " + error.message);
+                    loadingOverlay.classList.remove('active');
+                    processBtn.disabled = false;
+                });
+            }, 'image/png');
+        }
+
+        // Premium Step Undo Utility
+        function undoLastAction() {
+            if (editHistory.length > 1) {
+                editHistory.pop(); 
+                const fallbackBlob = editHistory[editHistory.length - 1];
+                currentImageBlob = fallbackBlob;
+                
+                imgPreview.src = URL.createObjectURL(fallbackBlob);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                if (editHistory.length === 1) {
+                    undoBtn.disabled = true;
+                }
+            }
+        }
+
+        // --- NEW PREMIUM DOWNLOAD METHOD ---
+        function downloadCurrentImage() {
+            if (!currentImageBlob) return;
+
+            // 1. Create temporary runtime virtual download link
+            const downloadUrl = URL.createObjectURL(currentImageBlob);
+            const downloadLink = document.createElement('a');
+            
+            downloadLink.href = downloadUrl;
+            // Generates dynamic file names so they don't overwrite each other (e.g. erased_image_171542.png)
+            downloadLink.download = `erased_image_${Math.floor(Date.now() / 1000)}.png`;
+            
+            // 2. Programmatically fire a user click trigger
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            
+            // 3. Clean memory up instantly after routing the download payload
+            document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(downloadUrl);
+        }
+    </script>
+</body>
+</html>
