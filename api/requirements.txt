@@ -7,3 +7,4 @@ static-ffmpeg
 Pillow
 
 markdown
+imageio_ffmpeg

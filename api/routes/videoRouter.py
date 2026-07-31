@@ -5,7 +5,8 @@ import tempfile
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
-
+import imageio_ffmpeg
+os.environ["PATH"] = os.path.dirname(imageio_ffmpeg.get_ffmpeg_exe()) + os.pathsep + os.environ.get("PATH", "")
 router = APIRouter()
 
 FFMPEG_TIMEOUT = 300

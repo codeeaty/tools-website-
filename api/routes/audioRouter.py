@@ -6,9 +6,12 @@ import math
 import subprocess
 import tempfile
 # 👇 FIX 1: Import and run static_ffmpeg FIRST before touching pydub!
-import static_ffmpeg
-static_ffmpeg.add_paths()
+import os
+import imageio_ffmpeg
 
+# Bundled ffmpeg binary — no runtime download or filesystem write needed.
+_ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
+os.environ["PATH"] = os.path.dirname(_ffmpeg_path) + os.pathsep + os.environ.get("PATH", "")
 # Now it is safe to import pydub
 from pydub import AudioSegment
 
