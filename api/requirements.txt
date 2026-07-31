@@ -5,6 +5,6 @@ pydantic
 pydub
 static-ffmpeg
 Pillow
-rembg
+
+onnxruntime
 markdown
-onnxruntime==1.17.1
