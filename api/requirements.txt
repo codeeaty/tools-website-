@@ -6,4 +6,5 @@ pydub
 static-ffmpeg
 Pillow
 rembg
+onnxruntime
 markdown
