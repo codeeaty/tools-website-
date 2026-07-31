@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Request, File, UploadFile, Form
-from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import uuid
 from rembg import remove
