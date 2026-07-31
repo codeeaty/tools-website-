@@ -1,13 +1,8 @@
 from fastapi import FastAPI, Request, File, UploadFile, Form
+# from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-import uuid
-from rembg import remove
-from typing import Optional
 
 import os
-import urllib.request
-import onnxruntime as ort
-# from routes.lamaairemove import router  as testingrotuer
 from routes.imageRouter import router as Imagerouter
 from routes.audioRouter import router as audioRouter
 from routes.videoRouter import router as videoRouter
@@ -43,7 +38,7 @@ app.add_middleware(
 # except Exception as e:
 #     print(f"--- FAILED TO LOAD MODEL: {e} ---")
 
-templates = Jinja2Templates(directory="templates")
+# templates = Jinja2Templates(directory="templates")
 
 # Guarantee that system resource folders exist
 os.makedirs("uploads", exist_ok=True)
